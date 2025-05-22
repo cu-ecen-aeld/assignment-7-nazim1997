@@ -33,29 +33,16 @@ struct aesd_buffer_entry *aesd_circular_buffer_find_entry_offset_for_fpos(struct
     /**
     * TODO: implement per description
     */
-    printf("start----------------------------------------------------------------------------------------\n");
-    printf("Looking for offset %zu, starting from entry %d\n", char_offset, buffer->out_offs);
-
-
-    printf("printing buffer content:\n\n");
-    for (int i = buffer->out_offs; i <= buffer->in_offs; i++) {
-        printf("entry[%d] = %s\n", i, buffer->entry[i].buffptr);
-    }
+    int current_index = buffer->out_offs;
 
     for (int i = 0; i < AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED; i++) {
-        if(char_offset <= buffer->entry[i].size - 1) {
-            printf("char_offset %ld is less than size %ld\n", char_offset, buffer->entry[i].size);
+        if(char_offset < buffer->entry[current_index].size) {
             *entry_offset_byte_rtn = char_offset;
-            printf("entry[%d] with entry_offset %ld\n", i, *entry_offset_byte_rtn);
-            return &buffer->entry[i];
+            return &buffer->entry[current_index];
         }
-        else {
-            printf("value %ld is greated than size then size %ld\n", char_offset, buffer->entry[i].size - 1);
-            char_offset = char_offset - buffer->entry[i].size;
-            printf("value of char_offset now is %ld\n", char_offset);
-        }
+        char_offset -= buffer->entry[current_index].size;
+        current_index = (current_index + 1) % AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED;
     }
-    printf("end----------------------------------------------------------------------------------------\n");
 
     return NULL;
 }
